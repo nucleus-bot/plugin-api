@@ -57,7 +57,7 @@ You can start your plugin by creating a `class` that implements the `IPlugin` in
 - Cannot be an interface
 - Cannot be abstract
 
-If you create a constructor that accepts an `IPluginContext`, it will be passed to your Plugins constructor
+If your class has a constructor that accepts an `IPluginContext`, it will be passed in during initialization
 
 ```csharp
 class MyPlugin : IPlugin {
@@ -69,13 +69,13 @@ class MyPlugin : IPlugin {
 }
 ```
 
-### Async Registration
+### Registration
 
 `IPlugin` contains a `Register` method that allows for asynchronous Plugin initialization after the constructor has been called.
 
 ```csharp
 class MyPlugin : IPlugin {
-    protected async ValueTask Register() {
+    public async ValueTask Register() {
         // ... Write your async code here
     }
 }
@@ -112,7 +112,7 @@ throw new NotImplementedException();
 
 # Emotes
 
-The Companion app is capable of supporting custom emotes. Emotes only require a `name` and a `url`. `url`s must be loaded over HTTPS.
+The Companion app is capable of supporting custom emotes. Emotes only require a `name` and a `url` **(`url`s must be loaded over HTTPS)**.
 
 ```csharp
 ValueTask Register() {
@@ -193,3 +193,105 @@ ValueTask Register() {
 # Messages
 
 Plugins are capable of updating, modifying, or completely cancelling chat messages. For example, if your plugin introduced new emotes, you'll need to replace the text contents with an `Image`
+
+## Middleware
+
+To intercept messages you'll need to create a MessageHandler middleware in your `Register` method.
+
+```csharp
+ValueTask Register() {
+    this.Context.MessageHandlerMiddleware(async (context, next) => {
+        // Do what you need to do here
+        
+        // Call the next middleware
+        await next();
+    });
+}
+```
+
+### Priority
+
+Your Middleware can be assigned one of three priorities, `FIRST`, `INSERT`, or `LAST` (The default is `INSERT`).
+
+- *After* all priority stages are completed (At the end of `LAST`) is when the Message is populated to the UI. After this point it cannot be modified or cancelled.
+
+```csharp
+private async ValueTask MyMethod(IMessageContext context, Func<ValueTask> next)
+    => await next();
+
+ValueTask Register() {
+    // This will run last
+    this.Context.MessageHandlerMiddleware(MyMethod, Ordering.LAST);
+
+    // This will run first
+    this.Context.MessageHandlerMiddleware(MyMethod, Ordering.FIRST);
+
+    // This will run in the middle
+    this.Context.MessageHandlerMiddleware(MyMethod, Ordering.INSERT);
+}
+```
+
+| Priority | Description                                                                                                                                                                     |
+|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `FIRST`  | Will run with highest priority. Anything that modifies the message should run here so that Middleware that reads the final message will do so after these modifications are run |
+| `INSERT` | Runs based off `Insert-Order`, plugins that are loaded first will be called first.                                                                                              |
+| `LAST`   | Runs after all other processing is completed, if your plugin *reads* messages in their final form, it should be done here                                                       |
+
+## Circuits
+
+Message middleware runs in a circuit. When the first Middleware is run it is passed a delegate `next` which will begin the next middleware.
+
+- If you *do not* invoke the `next` middleware, short-circuiting (see below) will occur.
+- Calling `next` multiple times may cause unintended side effects.
+  - If the next middleware short-circuits, invoking `next` will fix the short-circuit
+  - If short-circuiting has not occurred, invoking `next` will return a `ValueTask.CompletedTask`
+
+Where you invoke `next` may change how your middleware runs.
+
+If you invoke `next` at the start of your method, all other middleware will run (Including populating the message to the UI):
+
+```csharp
+this.Context.MessageHandlerMiddleware(async (context, next) => {
+    await next();
+    
+    // Do read-only operations here
+});
+```
+
+### Short-circuiting
+
+It is possible to "short-circuit" the middleware by simply not calling the `next` delegate. Doing so can prevent the message from populating in the UI, which may be the desired effect.
+
+
+## Content
+
+A number of indexers and methods exist for updating the contents of a Message.
+
+### Components
+
+Messages consist of `Components` that are implemented by the main Companion application. Some examples of Components are `Text` or `Image`. Since components are only available as interfaces in the API, they must be constructed and accessed through the `IPluginContext` (`IPluginContext` provides an `IComponentsHelper` interface)
+
+```csharp
+IPluginContext context = ...;
+IComponentsHelper components = context.Components;
+
+// Text is created using a String
+ITextComponent text = components.Text("This is text");
+
+// Images require a "text" and an Image URI
+IImageComponent image = components.Image("Kappa", new Uri("https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/2.0"));
+
+// Text and Image are both `IComponent`s
+IComponent component = text;
+```
+
+### Ranges
+
+Once we have an `IComponent`, sections of messages can easily be replaced using a `Range`.
+
+```csharp
+async (context, next) => {
+    // This will replace the start of every message with "Neat!"
+    context.Contents[..4] = components.Text("Neat!");
+};
+```

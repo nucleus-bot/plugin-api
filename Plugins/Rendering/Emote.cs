@@ -1,5 +1,5 @@
 namespace Nucleus.Plugins.Rendering {
-    public sealed class Emote {
+    public struct Emote {
         /// <summary>
         /// The name/literal of the Emote
         /// </summary>
