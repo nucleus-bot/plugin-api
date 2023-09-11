@@ -1,4 +1,6 @@
-![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/Nucleus.API?logo=nuget&label=NuGet) ![Nuget](https://img.shields.io/nuget/dt/Nucleus.API?label=Downloads) ![Discord](https://img.shields.io/discord/349012716100386827?label=Discord&logo=discord&logoColor=ffffff&color=7389D8&link=https%3A%2F%2Fdiscord.gg%2FU7gKrmw)
+[![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/Nucleus.API?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Nucleus.API/)
+[![Nuget](https://img.shields.io/nuget/dt/Nucleus.API?label=Downloads)](https://www.nuget.org/packages/Nucleus.API/)
+[![Discord](https://img.shields.io/discord/349012716100386827?label=Discord&logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/U7gKrmw)
 
 # Plugin API
 
