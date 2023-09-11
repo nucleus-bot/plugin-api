@@ -30,10 +30,15 @@
         <Copyright>NucleusBot © | All rights reserved.</Copyright>
         <Description>A Plugin API for NucleusBot Companion</Description>
         
-        <PackageProjectUrl>https://www.nucleus.bot</PackageProjectUrl>
+        <PackageProjectUrl>https://www.nucleus.bot/companion</PackageProjectUrl>
+        <PackageType>Dependency</PackageType>
         <RepositoryUrl>https://github.com/nucleus-bot/plugin-api</RepositoryUrl>
         <PackageTags>nucleusbot</PackageTags>
         <NeutralLanguage>en</NeutralLanguage>
+        
+        <!-- File references -->
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>
     
     <ItemGroup>
@@ -45,5 +50,9 @@
             <Private>false</Private>
             <ExcludeAssets>runtime</ExcludeAssets>
         </PackageReference>
+        
+        <!-- NuGet -->
+        <None Include="README.md" Pack="true" PackagePath="" />
+        <None Include="LICENSE" Pack="true" PackagePath="" />
     </ItemGroup>
 </Project>

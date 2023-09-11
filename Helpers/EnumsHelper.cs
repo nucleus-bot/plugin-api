@@ -28,10 +28,9 @@ namespace Nucleus.Helpers {
             => !role.Restricted();
         
         public static bool IsGrantableTo(this UserRoles role, PayloadUser user)
-            => role is UserRoles.ADMIN ? user.Roles.Contains(UserRoles.STAFF) : role.IsGrantable();
+            => role is UserRoles.ADMIN ? user.Roles is UserRoles[] roles && roles.Contains(UserRoles.STAFF) : role.IsGrantable();
         
         public static bool Restricted(this UserRoles role)
             => role.IsStaff() || role is UserRoles.FOLLOWER or UserRoles.SUBSCRIBER;
-        
     }
 }
