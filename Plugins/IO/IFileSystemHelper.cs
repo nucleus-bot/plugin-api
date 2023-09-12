@@ -43,6 +43,16 @@ namespace Nucleus.Plugins.IO {
         bool Exists(string localpath);
         
         /// <summary>
+        /// Delete a file from the disk
+        /// </summary>
+        /// <param name="localpath"></param>
+        /// <returns></returns>
+        bool Delete(string localpath);
+        
+        #endregion
+        #region Movement
+        
+        /// <summary>
         /// Move a file from one location to another
         /// <br />This will move files relative to the parent location (eg; If <paramref name="localFrom"/> is <b>"Folder/Folder/File.json"</b> and <paramref name="localTo"/> is <b>"File2.json"</b>, the new location will be <b>"~/File2.json"</b>)
         /// </summary>
