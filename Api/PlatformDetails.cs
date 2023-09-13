@@ -26,6 +26,6 @@ namespace Nucleus.Api {
         /// The Platform
         /// </summary>
         [JsonPropertyName("site"), JsonConverter(typeof(JsonPlatformConverter))]
-        public PayloadPlatform? Platform { get; set; }
+        public Payloads.Platform? Platform { get; set; }
     }
 }

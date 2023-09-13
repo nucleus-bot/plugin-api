@@ -8,8 +8,8 @@ The C# plugin API for [NucleusBot Companion](https://www.nucleus.bot/companion) 
 
 # Example Plugins
 
-- Discord Call Overlay
-- BTTV Emotes
+- Discord Call Overlay **(TBA)**
+- BTTV Emotes **(TBA)**
 
 # Getting Started
 

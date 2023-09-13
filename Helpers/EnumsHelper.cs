@@ -1,5 +1,6 @@
 using Nucleus.Api;
 using Nucleus.Api.Enums;
+using Nucleus.Api.Payloads;
 
 namespace Nucleus.Helpers {
     public static class EnumsHelper {
@@ -27,7 +28,7 @@ namespace Nucleus.Helpers {
         public static bool IsGrantable(this UserRoles role)
             => !role.Restricted();
         
-        public static bool IsGrantableTo(this UserRoles role, PayloadUser user)
+        public static bool IsGrantableTo(this UserRoles role, User user)
             => role is UserRoles.ADMIN ? user.Roles is UserRoles[] roles && roles.Contains(UserRoles.STAFF) : role.IsGrantable();
         
         public static bool Restricted(this UserRoles role)
