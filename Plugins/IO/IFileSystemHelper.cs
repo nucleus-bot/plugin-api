@@ -159,7 +159,7 @@ namespace Nucleus.Plugins.IO {
         /// <returns></returns>
         /// <exception cref="IOException">If permission is denied to the FileSystem</exception>
         ValueTask<string> ReadAsync(string localpath, CancellationToken cancellation = default);
-
+        
         /// <summary>
         /// Read a JSON file and Parse it
         /// </summary>
@@ -189,6 +189,17 @@ namespace Nucleus.Plugins.IO {
         /// <exception cref="IOException">If permission is denied to the FileSystem</exception>
         /// <returns></returns>
         ValueTask<string> ShasumAsync(string localpath, HashType type = HashType.SHA1, CancellationToken cancellation = default);
+        
+        #endregion
+        #region Watchers
+        
+        /// <summary>
+        /// Watch a local path (File or directory) for changes
+        /// </summary>
+        /// <param name="localpath">A file path localized to the Plugins Folder</param>
+        /// <param name="action">Called whenever a change occurs</param>
+        /// <returns>A disposable that can be called to stop watching</returns>
+        IDisposable Watch(string localpath, Action action);
         
         #endregion
     }

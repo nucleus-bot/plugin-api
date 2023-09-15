@@ -1,5 +1,6 @@
 using Nucleus.Plugins.Enums;
 using Nucleus.Plugins.IO;
+using Nucleus.Plugins.Razor;
 using Nucleus.Plugins.Rendering;
 
 namespace Nucleus.Plugins.Contextualization {
@@ -15,6 +16,11 @@ namespace Nucleus.Plugins.Contextualization {
         /// A Helper class used for creating Components in the UI
         /// </summary>
         IComponentsHelper Components { get; }
+        
+        /// <summary>
+        /// A Helper class used for interacting with the local webserver
+        /// </summary>
+        IServerHelper WebServer { get; }
         
         #endregion
         #region Events

@@ -50,6 +50,7 @@
             <Private>false</Private>
             <ExcludeAssets>runtime</ExcludeAssets>
         </PackageReference>
+        <SupportedPlatform Include="browser" />
         
         <!-- NuGet -->
         <None Include="README.md" Pack="true" PackagePath="" />

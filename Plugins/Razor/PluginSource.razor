@@ -1,0 +1,52 @@
+@using Nucleus.Plugins.IO
+@inject IFileSystemHelper IO
+@implements IDisposable
+
+@if (this.Type is "text/css") {
+    <link rel="stylesheet" href="@this.Source?t=@this.Now.ToUnixTimeMilliseconds()"/>
+}
+
+@code {
+    private readonly object Lock = new();
+    private IDisposable? Watcher = null;
+    
+    private DateTimeOffset Now => DateTimeOffset.Now;
+    
+    /// <summary>
+    /// Currently on supports "text/css", already set by default
+    /// </summary>
+    [Parameter]
+    public string Type { get; set; } = "text/css";
+    
+    /// <summary>
+    /// Here you can set the Local path (relative to your Plugins "www" folder)
+    /// </summary>
+    [Parameter]
+    public string Path { get; set; } = string.Empty;
+    
+    private string Source {
+        get {
+            string source = this.Path;
+            if (!source.StartsWith('/')) {
+                source = $"/{source}";
+            }
+            return source;
+        }
+    }
+    
+    /// <inheritdoc />
+    protected override void OnParametersSet() {
+        lock (this.Lock) {
+            this.Watcher?.Dispose();
+            this.Watcher = this.IO.Watch(System.IO.Path.Join("www", this.Path), () => this.StateHasChanged());
+        }
+    }
+    
+    /// <inheritdoc />
+    public void Dispose() {
+        lock (this.Lock) {
+            this.Watcher?.Dispose();
+            this.Watcher = null;
+        }
+    }
+}

@@ -89,13 +89,92 @@ When your Plugin is unloaded or disabled by the user, you can clean up any resou
 
 The Companion app provides a local HTTP server to allow providing embeddable HTML/JavaScript pages (eg; for adding as OBS Browser Sources) using Blazor server/Razor pages.
 
-To make sure that your Plugin has access to the tools necessary for creating razor pages, make sure that you change your `Console Application`s `.csproj` to use the Web SDK:
+To make sure that your Plugin has access to the tools necessary for creating razor pages, make sure that you change your `Console Application`s `.csproj` to use the Razor SDK:
 
 ```xml
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
     <!-- Your project details -->
 </Project>
 ```
+
+### Server Access
+
+> :warning: The URL for accessing your plugins content will always start with `/{your-plugin-id}`
+
+The local HTTP Server runs on a variable port that the user can change at any time. You can get a `URI` for pages created by your Plugin by using the `IServerHelper` provided in the `IPluginContext`
+
+```csharp
+IServerHelper helper = ...;
+
+Uri uri = helper.GetPath<MyPageModel>();
+string host = uri.Host;
+int port = uri.Port;
+string path = uri.PathAndQuery;
+```
+
+### Blazor Pages
+
+Plugins can make use of Blazor by creating `.razor` files as part of your project. The Companion will load your compiled classes automatically
+
+```csharp
+@page "my-page"
+
+<html>
+    <head>
+    </head>
+    <body>
+        <p>Hello World!</p>
+    </body>
+</html>
+```
+
+### Static content
+
+If your plugin needs to host static CSS, HTML, Images, etc. you can do so by moving them into the `www` folder of your plugin. Static files will become available at the root of your plugin `/{your-plugin-id}` on the webserver.
+
+If you're making use of Blazor pages and want to be able to live reload CSS files you can use the `PluginSource` razor component. Modifying the content of the CSS file will trigger a File Watcher that will trigger a reload on that file.
+
+```csharp
+@page "my-page"
+<html>
+    <head>
+        <PluginSource Path="styles/my-style.css" />
+    </head>
+</html>
+```
+
+### Service Provider
+
+Services that you configured using the `IPluginContext`, as well as several services provided by the Companion, can be injected into your Razor pages if you need to access them from there
+
+```csharp
+@page "my-page"
+@inject IPluginContext Plugin
+@inject IServerHelper ServerHelper
+@inject IFileSystemHelper IO
+@inject IComponentsHelper Components
+```
+
+If your pages need to access to variables provided by your Plugin classes, you can also inject those too.
+
+> **MyCoolPlugin.class**
+> ```csharp
+> class MyCoolPlugin {
+>     public readonly IList<object> SharedObject = new List<object>();
+> }
+> ```
+
+> **SomePage.razor**
+> ```csharp
+> @page "my-page"
+> @inject MyCoolPlugin Plugin
+> 
+> @{
+>     IList<object> items = this.Plugin.SharedObject;
+> }
+> ```
+
+---
 
 # Commands
 
@@ -109,6 +188,8 @@ The Companion app supports handling chat commands as slash commands as long a ha
 // TODO: Write something here
 throw new NotImplementedException();
 ```
+
+---
 
 # Emotes
 
@@ -156,6 +237,8 @@ ValueTask Register() {
 }
 ```
 
+---
+
 # Scopes
 
 `Emotes` and `Commands` can be registered in two different scopes:
@@ -189,6 +272,8 @@ ValueTask Register() {
     });
 }
 ```
+
+---
 
 # Messages
 
