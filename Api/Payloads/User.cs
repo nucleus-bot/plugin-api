@@ -39,9 +39,10 @@ namespace Nucleus.Api.Payloads {
         [JsonPropertyName("platform")]
         public required PlatformDetails PlatformDetails { get; init; }
         
-        /*/// <summary>Settings related to the User</summary>
+        /// <summary>Settings related to the User</summary>
         [JsonPropertyName("settings"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public virtual IUserProperties Properties { get; set; }*/
+        [Obsolete("Use with care, Type is not yet finalized so 'object' is a stand-in")]
+        public virtual object? Properties { get; set; }
         
         /// <summary>Roles that the User has (If viewed in the context of a channel)</summary>
         [JsonPropertyName("roles"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
