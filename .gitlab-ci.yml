@@ -1,0 +1,73 @@
+stages:
+  - sync
+  - nuget
+
+source sync:
+  stage: sync
+  tags:
+    - python3
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    # Set up SSH directory (and add github as a trusted connection point)
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+    # Generate a token using our python script
+    - token=$(/opt/gettoken.py)
+    - if [ $? -ne 0 ]; then echo "Error getting token ${token}"; exit 1; fi
+    # Move into our API folder
+    - cd 'Plugin API'
+    - git init -b "$CI_COMMIT_BRANCH"
+    - git branch -M "$CI_COMMIT_BRANCH"
+    # Configure git options
+    - git config user.name "nucleus-bot[bot]"
+    - git config user.email "92706127+nucleus-bot[bot]@users.noreply.github.com"
+    - git remote add origin "https://92706127+nucleus-bot[bot]:${token}@github.com/nucleus-bot/plugin-api.git"
+    - set +e
+    # Start tracking all of the current files
+    - git fetch origin
+    - git add .
+    - git ls-files > /tmp/current-files
+    # Add our new code
+    - git commit -m "Latest code changes"
+    # Pull existing code 
+    - git pull origin master --rebase -X theirs
+    - git ls-files > /tmp/remote-files
+    # Compare different files
+    - >-
+      while read DIFF; do
+        if [[ "$DIFF" == "> "* ]]; then
+          rm -f "${DIFF:2}"
+        fi
+      done < <(diff /tmp/current-files /tmp/remote-files)
+    - git add .
+    - git commit -m "Clean up files"
+    - set -e
+    # Push changes to remote
+    - git push origin "$CI_COMMIT_BRANCH"
+  allow_failure: true
+  interruptible: false
+  dependencies: []
+
+nuget sync:
+  stage: nuget
+  tags:
+    - .net7
+  cache:
+    key: $CI_COMMIT_BRANCH
+    paths:
+      - .nuget
+  before_script:
+    - dotnet restore ./Plugin\ API --packages ./.nuget
+  script:
+    # Read versions from the nuget API
+    - versions=$(curl --request GET https://api.nuget.org/v3-flatcontainer/nucleus.api/index.json --silent | jq --raw-output '.versions')
+    # Versions are based off of the current date
+    - date="$(date '+%y.%-m.%-d')"
+    # Get any versions starting with the data that already exist
+    - collection=$(echo "$versions" | jq -r ".[]|select(startswith(\"${date}\"))")
+    - dotnet pack -p:PackageVersion="$date" ./Plugin\ API --no-build --output ./nupkgs
+    - find . -print
+  variables:
+    GIT_STRATEGY: clone
